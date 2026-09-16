@@ -1,0 +1,17 @@
+*.gem
+*.rbc
+/.bundle/
+/coverage/
+/doc/
+/pkg/
+/spec/reports/
+/tmp/
+/vendor/bundle
+.rspec_status*
+Gemfile.lock
+
+# Used by dotenv library to load environment variables.
+.env
+
+.byebug_history
+.DS_Store

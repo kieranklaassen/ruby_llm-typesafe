@@ -1,0 +1,47 @@
+plugins:
+  - rubocop-performance
+  - rubocop-rake
+  - rubocop-rspec
+
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.1
+  Exclude:
+    - Archspec.rb
+    - docs/**/*
+    - vendor/**/*
+  SuggestExtensions: false
+
+Metrics/ClassLength:
+  Max: 600
+Metrics/AbcSize:
+  Max: 80
+Metrics/CyclomaticComplexity:
+  Max: 25
+Metrics/MethodLength:
+  Max: 80
+  CountAsOne:
+    - array
+    - hash
+    - heredoc
+Metrics/ModuleLength:
+  Max: 550
+Metrics/BlockLength:
+  Exclude:
+    - spec/**/*.rb
+Performance/CollectionLiteralInLoop:
+  Exclude:
+    - spec/**/*
+Performance/UnfreezeString:
+  Exclude:
+    - spec/**/*
+RSpec/ExampleLength:
+  Enabled: false
+RSpec/MultipleExpectations:
+  Enabled: false
+RSpec/SpecFilePathFormat:
+  CustomTransform:
+    TypeSafe: typesafe
+Naming/FileName:
+  Exclude:
+    - lib/ruby_llm-typesafe.rb

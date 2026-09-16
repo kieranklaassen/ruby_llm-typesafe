@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'bundler/setup'
+require 'dotenv/load'
+require 'ruby_llm/providers/typesafe'
+
+require 'irb'
+
+RubyLLM.configure do |config|
+  config.typesafe_api_key = ENV.fetch('TYPESAFE_API_KEY', nil)
+  config.typesafe_api_base = ENV.fetch('TYPESAFE_API_BASE', nil)
+end
+
+IRB.start(__FILE__)

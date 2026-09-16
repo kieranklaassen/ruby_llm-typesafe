@@ -1,0 +1,52 @@
+[
+  {
+    "id": "jev-latest",
+    "name": "jev-latest",
+    "provider": "typesafe",
+    "family": "jev",
+    "created_at": "2026-09-10 18:38:01 UTC",
+    "context_window": null,
+    "max_output_tokens": null,
+    "knowledge_cutoff": null,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "capabilities": [
+      "structured_output"
+    ],
+    "pricing": {},
+    "metadata": {
+      "description": "The latest iteration of TypeSafe's System One Model: Jev"
+    }
+  },
+  {
+    "id": "jev-preview",
+    "name": "jev-preview",
+    "provider": "typesafe",
+    "family": "jev",
+    "created_at": "2026-09-10 18:39:06 UTC",
+    "context_window": null,
+    "max_output_tokens": null,
+    "knowledge_cutoff": null,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "capabilities": [
+      "structured_output"
+    ],
+    "pricing": {},
+    "metadata": {
+      "description": "A preview version of `jev-latest`: should be better in most ways"
+    }
+  }
+]
