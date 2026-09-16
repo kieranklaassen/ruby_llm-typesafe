@@ -8,9 +8,9 @@ product_contract_source: ce-plan-bootstrap
 execution: code
 ---
 
-# RubyLLM TypeSafe Provider - Plan
+# RubyLLM TypeSafe provider plan
 
-## Goal Capsule
+## Goal capsule
 
 - **Objective:** Ship `ruby_llm-typesafe` 0.1.0 as an MIT-licensed RubyLLM 2 provider for TypeSafe System One structured judgments.
 - **Authority:** The user-directed product decisions and live TypeSafe HTTP documentation override family conventions and reference-provider patterns.
@@ -20,7 +20,7 @@ execution: code
 
 ---
 
-## Product Contract
+## Product contract
 
 ### Summary
 
@@ -28,7 +28,7 @@ Create a public Ruby gem that lets RubyLLM 2 applications evaluate text or struc
 The provider exposes TypeSafe's `Choice`, `Noul`, and `Score` judgments as a RubyLLM structured-output schema.
 It returns the documented typed answer objects through `RubyLLM::Message#parsed` and does not pretend to support generated chat text.
 
-### Problem Frame
+### Problem frame
 
 TypeSafe publishes Python and JavaScript SDKs but no Ruby SDK.
 Ruby applications that standardize on RubyLLM therefore need custom HTTP code and cannot use RubyLLM's provider configuration, model resolution, messages, token accounting, or structured-output entry point.
@@ -39,8 +39,8 @@ The integration must preserve that semantic boundary instead of forcing the endp
 
 **Packaging and compatibility**
 
-- R1. The public gem and repository are named `ruby_llm-typesafe`, begin at version `0.1.0`, and use the MIT license. (session-settled: user-directed — chosen over a private EveryInc repository: the user requested an open-source gem in the existing `ruby_llm-*` family.)
-- R2. The gem supports RubyLLM 2 only with a dependency range that includes `2.0.0.rc3` and excludes RubyLLM 3. (session-settled: user-directed — chosen over RubyLLM 1.x compatibility: the user required RubyLLM 2 only.)
+- R1. The public gem and repository are named `ruby_llm-typesafe`, begin at version `0.1.0`, and use the MIT license. (session-settled: user-directed, chosen over a private EveryInc repository: the user requested an open-source gem in the existing `ruby_llm-*` family.)
+- R2. The gem supports RubyLLM 2 only with a dependency range that includes `2.0.0.rc3` and excludes RubyLLM 3. (session-settled: user-directed, chosen over RubyLLM 1.x compatibility: the user required RubyLLM 2 only.)
 - R3. The gem supports the Ruby versions covered by the RubyLLM 2 and reference-provider baseline, starting at Ruby 3.1.3.
 - R4. Requiring `ruby_llm-typesafe` registers a `:typesafe` provider and its packaged TypeSafe model metadata without modifying RubyLLM.
 
@@ -54,7 +54,7 @@ The integration must preserve that semantic boundary instead of forcing the endp
 
 **RubyLLM structured-output behavior**
 
-- R10. The provider operates only when `Chat#with_schema` receives this gem's TypeSafe schema; plain chat, arbitrary JSON schemas, streaming, and tools fail with actionable errors. (session-settled: user-directed — chosen over a general chat/completions provider: TypeSafe is required to be a structured-output-only provider.)
+- R10. The provider operates only when `Chat#with_schema` receives this gem's TypeSafe schema; plain chat, arbitrary JSON schemas, streaming, and tools fail with actionable errors. (session-settled: user-directed, chosen over a general chat/completions provider: TypeSafe is required to be a structured-output-only provider.)
 - R11. The schema builder validates question IDs and per-primitive criteria before any network request and produces a JSON Schema that describes the documented typed answer map.
 - R12. The latest user message supplies string state by default; message content that is a JSON object or array is decoded into structured state (JSON scalars such as `42` or `true` stay strings because TypeSafe state is `string | object | array`), and `with_provider_options(state: ...)` may supply an explicit JSON-compatible state (`provider_options` is System One's own wire vocabulary, as in every RubyLLM provider).
 - R13. A successful request returns an assistant `RubyLLM::Message` whose JSON content is the TypeSafe `answers` map, whose model and token fields reflect the response, and whose raw value retains the complete HTTP response.
@@ -69,7 +69,7 @@ The integration must preserve that semantic boundary instead of forcing the endp
 - R19. An opt-in live test uses only `TYPESAFE_API_KEY` from the process environment and evaluates all three primitive types in one System One request.
 - R20. CI runs the offline test suite and style checks across the supported Ruby matrix without requiring secrets.
 
-### Acceptance Examples
+### Acceptance examples
 
 - AE1. Covers R6, R8, R12, and R13.
   - **Given:** A schema with one Noul, one Choice, and one Score plus a JSON object state.
@@ -88,7 +88,7 @@ The integration must preserve that semantic boundary instead of forcing the endp
   - **When:** The default suite runs.
   - **Then:** No live request runs and no credential is required.
 
-### Scope Boundaries
+### Scope boundaries
 
 - Structured System One evaluation only.
 - No free-form chat, completions, generated explanations, embeddings, images, audio, moderation, tools, or streaming.
@@ -97,7 +97,7 @@ The integration must preserve that semantic boundary instead of forcing the endp
 - No automatic action thresholds or business policy; callers own how probabilities and confidence affect behavior.
 - No default assumption that a TypeSafe judgment is true; typed output constrains shape, not correctness.
 
-### Deferred to Follow-Up Work
+### Deferred to follow-up work
 
 - Optional model discovery if TypeSafe publishes and documents a stable HTTP model-list endpoint suitable for provider catalogs.
 - A higher-level convenience evaluator if real usage shows that RubyLLM's schema and provider-options composition is too verbose.
@@ -105,9 +105,9 @@ The integration must preserve that semantic boundary instead of forcing the endp
 
 ---
 
-## Planning Contract
+## Planning contract
 
-### Key Technical Decisions
+### Key technical decisions
 
 - KTD1. **Use a dedicated TypeSafe schema object as the RubyLLM integration seam.** The schema builder embeds the question definitions in a namespaced JSON Schema extension that survives RubyLLM 2 normalization; the provider extracts it and sends only the documented question payload. This implements R6, R10, and R11 without monkey-patching `RubyLLM::Chat`.
 - KTD2. **Return the `answers` map as message content and retain the full response as raw data.** `Message#parsed` becomes the ergonomic structured result while response model and usage use RubyLLM's standard fields. This implements R13 without duplicating model and usage inside the parsed business value.
@@ -116,9 +116,9 @@ The integration must preserve that semantic boundary instead of forcing the endp
 - KTD5. **Treat each call as one evaluation and derive state only from the latest user turn or an explicit provider override.** Prior turns are transport history, not System One state. Callers who need a conversation evaluated pass the conversation as structured state. This implements R12 and R14.
 - KTD6. **Validate JSON compatibility and primitive invariants locally.** Choice requires a nonempty option map, Score requires at least two ordered levels, Noul accepts only optional true/false criteria, and all questions require a stable nonempty ID and instructions key. Service-side validation remains authoritative for limits not stated in live docs.
 - KTD7. **Keep the live test opt-in and outside CI.** The test reads `TYPESAFE_API_KEY` only at runtime, uses harmless synthetic state, and never records the response as a fixture. This implements R17 through R20.
-- KTD8. **Use MIT and version 0.1.0.** (session-settled: user-directed — chosen over delaying license/version selection: MIT is the repository-family default and the user named 0.1.0 as the open-area default.)
+- KTD8. **Use MIT and version 0.1.0.** (session-settled: user-directed, chosen over delaying license/version selection: MIT is the repository-family default and the user named 0.1.0 as the open-area default.)
 
-### High-Level Technical Design
+### High-level technical design
 
 The public DSL, provider boundary, and response path form one constrained flow:
 
@@ -185,7 +185,7 @@ flowchart TB
   ParseGate -->|yes| Done
 ```
 
-### Output Structure
+### Output structure
 
 Amended after planning: the user asked for the layout, tooling, and testing conventions of the upstream `crmne/ruby_llm` provider gems (`ruby_llm provider-gem`), so the provider lives under `lib/ruby_llm/providers/`, the wire format under `lib/ruby_llm/protocols/`, and live specs replay VCR cassettes.
 
@@ -220,7 +220,7 @@ ruby_llm-typesafe/
         └── protocols/system_one_spec.rb + system_one/{chat,models}_spec.rb
 ```
 
-### Risks and Dependencies
+### Risks and dependencies
 
 - The gem depends on RubyLLM 2's provider registration, schema normalization, model catalog, transport, message, and error contracts. Tests must pin these integration seams against `>= 2.0.0.rc3, < 3`.
 - TypeSafe may evolve the System One payload or typed answers. The live docs are authoritative; wire-contract tests should use only documented fields and the README should link to the live HTTP reference.
@@ -228,7 +228,7 @@ ruby_llm-typesafe/
 - RubyLLM debug logging may include request bodies. The gem must not add its own body or credential logging, and documentation should remind applications that evaluated state can be sensitive.
 - A live model response is probabilistic. The live test must assert response shape and bounds, not an exact classification.
 
-### Sources and Research
+### Sources and research
 
 - TypeSafe agent skill: `https://raw.githubusercontent.com/typesafe-ai/skills/main/skills/typesafe-ai/SKILL.md`
 - TypeSafe documentation index: `https://docs.typesafe.ai/llms.txt`
@@ -239,7 +239,7 @@ ruby_llm-typesafe/
 
 ---
 
-## Implementation Units
+## Implementation units
 
 ### U1. Gem scaffold, model catalog, and quality baseline
 
@@ -421,7 +421,7 @@ ruby_llm-typesafe/
 
 ---
 
-## Verification Contract
+## Verification contract
 
 | Gate | Applies to | Done signal |
 |---|---|---|
@@ -436,7 +436,7 @@ ruby_llm-typesafe/
 
 ---
 
-## Definition of Done
+## Definition of done
 
 - Every requirement R1-R20 is implemented or proven by an explicit test or documentation assertion.
 - U1-U5 are complete in dependency order and no implementation unit remains partial.

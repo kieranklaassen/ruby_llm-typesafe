@@ -1,6 +1,6 @@
 # Contributing to ruby_llm-typesafe
 
-This gem follows the conventions of [RubyLLM](https://github.com/crmne/ruby_llm): a provider knows where to talk and who you are, a protocol knows how to talk, and every behavior ships with a spec. Read RubyLLM's [AGENTS.md](https://github.com/crmne/ruby_llm/blob/main/AGENTS.md) and [custom providers guide](https://rubyllm.com/custom-providers/) before making larger changes.
+This gem follows the conventions of [RubyLLM](https://github.com/crmne/ruby_llm). A provider knows where to talk and who you are, a protocol knows how to talk, and every behavior ships with a spec. Read RubyLLM's [AGENTS.md](https://github.com/crmne/ruby_llm/blob/main/AGENTS.md) and [custom providers guide](https://rubyllm.com/custom-providers/) before making larger changes.
 
 ## Did you find a bug?
 
@@ -16,7 +16,7 @@ This gem follows the conventions of [RubyLLM](https://github.com/crmne/ruby_llm)
 
 ## Scope
 
-TypeSafe's System One models return typed judgments, not generated text. This gem is therefore structured output only. Changes that turn it into a chat, completion, streaming, or tool-calling provider are out of scope; open an issue first if you think an exception is warranted.
+TypeSafe's System One models return typed judgments, not generated text. This gem is therefore structured output only. Changes that turn it into a chat, completion, streaming, or tool-calling provider are out of scope. Open an issue first if you think an exception is warranted.
 
 Wire vocabulary stays in `lib/ruby_llm/protocols/system_one`; authentication, endpoints, the model catalog, and the question builder stay in `lib/ruby_llm/providers/typesafe`. `Archspec.rb` fails the build when they mix.
 
@@ -39,7 +39,7 @@ bundle exec rake vcr:record     # re-record every cassette against the live API 
 bundle exec rake models         # refresh models.json from GET /v1/models (needs TYPESAFE_API_KEY)
 ```
 
-Specs tagged `:live` talk to TypeSafe through VCR cassettes in `spec/fixtures/vcr_cassettes`; everything else is a plain unit test with WebMock. Cassette names derive from the example's full description, and a failing `:live` example deletes its cassette so the next run records against the real API.
+Specs tagged `:live` talk to TypeSafe through VCR cassettes in `spec/fixtures/vcr_cassettes`. Everything else is a plain unit test with WebMock. Cassette names derive from the example's full description, and a failing `:live` example deletes its cassette so the next run records against the real API.
 
 The API key lives only in your environment (`TYPESAFE_API_KEY`). VCR replaces it with `<TYPESAFE_API_KEY>` and the Authorization header with `Bearer <AUTH_TOKEN>` before writing a cassette. Always check cassettes for leaked keys before committing; gitleaks runs in the pre-commit hook and in CI.
 

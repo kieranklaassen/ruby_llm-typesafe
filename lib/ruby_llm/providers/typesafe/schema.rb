@@ -7,7 +7,7 @@ module RubyLLM
   module Providers
     class TypeSafe < Provider
       # Builds the batch of typed System One questions a chat sends to
-      # TypeSafe. Pass an instance to Chat#with_schema: RubyLLM sees a JSON
+      # TypeSafe. Pass an instance to Chat#with_schema. RubyLLM sees a JSON
       # Schema that describes the typed answer map, and the protocol reads
       # the question payload back out of the schema's +x-typesafe+ key.
       #
@@ -23,7 +23,7 @@ module RubyLLM
       # Score, +criteria+. Instructions and criteria accept strings or JSON
       # structure (Hash, Array, nil), as documented at
       # https://docs.typesafe.ai/primitives/advanced. Validation happens
-      # here, before any request; invalid input raises ArgumentError.
+      # here, before any request. Invalid input raises ArgumentError.
       class Schema
         NAME = 'typesafe_answers'
         ID_PATTERN = /\A[A-Za-z0-9_.-]+\z/
@@ -96,7 +96,7 @@ module RubyLLM
           @questions.size
         end
 
-        # Returns the structured-output schema RubyLLM hands to the provider:
+        # Returns the structured-output schema RubyLLM hands to the provider,
         # a JSON Schema for the typed answer map with the question payload
         # under the +x-typesafe+ key.
         def to_json_schema

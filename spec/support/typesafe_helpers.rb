@@ -39,7 +39,7 @@ module TypesafeHelpers
     { 'input_tokens' => 312, 'output_tokens' => 48 }
   end
 
-  # The support ticket example from the TypeSafe API reference: one question
+  # The support ticket example from the TypeSafe API reference, one question
   # of each type over one state.
   def support_schema
     RubyLLM::Providers::TypeSafe::Schema.new do |s|

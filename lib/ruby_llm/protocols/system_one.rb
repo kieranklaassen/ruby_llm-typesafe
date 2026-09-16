@@ -5,14 +5,14 @@ require_relative 'system_one/models'
 
 module RubyLLM
   module Protocols
-    # TypeSafe's System One API: one state and a map of typed questions in
-    # on v1/systemone, a map of typed answers plus usage out, and the model
-    # catalog on v1/models. System One generates no text, so streaming,
-    # tools, and every non-chat operation stay unimplemented and fail with
-    # RubyLLM's usual "doesn't support" errors.
+    # TypeSafe's System One API. POST v1/systemone takes one state and a map
+    # of typed questions and returns a map of typed answers plus usage. GET
+    # v1/models lists the catalog. System One generates no text, so
+    # streaming, tools, and every non-chat operation stay unimplemented and
+    # fail with RubyLLM's usual "doesn't support" errors.
     #
     # The questions travel inside the structured-output schema that
-    # Chat#with_schema normalizes, under the +x-typesafe+ extension key;
+    # Chat#with_schema normalizes, under the +x-typesafe+ extension key.
     # RubyLLM::Providers::TypeSafe::Schema puts them there.
     class SystemOne < Protocol
       include SystemOne::Chat
@@ -26,9 +26,9 @@ module RubyLLM
       end
 
       # +provider_options+ is System One's own vocabulary and merges into the
-      # wire payload, with one exception: an explicit +state+ replaces the
-      # state derived from the latest user message instead of deep-merging
-      # into it.
+      # wire payload. An explicit +state+ is the one exception. It replaces
+      # the state derived from the latest user message instead of
+      # deep-merging into it.
       def render(messages, schema: nil, provider_options: {}, before_request: [], **)
         options = provider_options.to_h.transform_keys(&:to_sym)
         payload = render_payload(messages, model: model, schema: schema, state: options.delete(:state))

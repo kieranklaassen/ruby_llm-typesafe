@@ -65,11 +65,11 @@ module RubyLLM
         end
 
         # Each ask is one independent evaluation, so only the latest user
-        # turn becomes state; earlier turns and answers stay in the transcript.
+        # turn becomes state. Earlier turns and answers stay in the transcript.
         def state_from(messages)
           message = messages.reverse.find { |candidate| candidate.role == :user }
           if message.nil? || message.content.nil?
-            raise Error, 'TypeSafe needs state to evaluate: ask with text, or set state through with_provider_options'
+            raise Error, 'TypeSafe needs state to evaluate. Ask with text, or set state through with_provider_options.'
           end
           raise UnsupportedAttachmentError, message.attachments.first.mime_type unless message.attachments.empty?
 
@@ -77,7 +77,7 @@ module RubyLLM
         end
 
         # User content that parses to a JSON object or array is sent as
-        # structured state; JSON scalars and everything else stay the string
+        # structured state. JSON scalars and everything else stay the string
         # the caller wrote, since state is string, object, or array.
         def structured_state(content)
           return content unless content.is_a?(String) && content.lstrip.start_with?('{', '[')

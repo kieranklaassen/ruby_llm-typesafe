@@ -4,8 +4,8 @@ module RubyLLM
   module Protocols
     class SystemOne < Protocol
       # Lists the models available to the account from GET v1/models. The
-      # endpoint returns a name, description, and release date per model;
-      # every System One model takes text state and returns structured
+      # endpoint returns a name, description, and release date per model.
+      # Every System One model takes text state and returns structured
       # answers, which is all the catalog can say about them.
       module Models
         MODALITIES = { input: %w[text], output: %w[text] }.freeze

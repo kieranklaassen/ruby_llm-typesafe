@@ -10,9 +10,10 @@ module RubyLLM
   module Providers
     # TypeSafe API integration. Jev, TypeSafe's System One model, evaluates
     # one state against typed Choice, Noul, and Score questions and returns
-    # calibrated probabilities instead of generated text, so this provider
-    # serves structured output only: build the questions with Schema, pass
-    # them to Chat#with_schema, and read the answers from Message#parsed.
+    # calibrated probabilities instead of generated text. This provider is
+    # therefore structured output only. Build the questions with Schema,
+    # pass them to Chat#with_schema, and read the answers from
+    # Message#parsed.
     #
     #   RubyLLM.configure { |config| config.typesafe_api_key = ENV['TYPESAFE_API_KEY'] }
     #
@@ -38,9 +39,9 @@ module RubyLLM
         { 'Authorization' => "Bearer #{@config.typesafe_api_key}" }
       end
 
-      # TypeSafe reports failures under +detail+: a Hash with a +message+ for
-      # API usage errors, or a list of offending fields for 422 validation
-      # failures. Neither shape is one the generic parser reads.
+      # TypeSafe reports failures under +detail+, either a Hash with a
+      # +message+ for API usage errors or a list of offending fields for 422
+      # validation failures. The generic parser reads neither shape.
       def parse_error(response)
         body = parse_error_body(response)
         detail = body['detail'] if body.is_a?(Hash)

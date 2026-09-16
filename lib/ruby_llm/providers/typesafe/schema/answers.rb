@@ -5,10 +5,10 @@ module RubyLLM
     class TypeSafe < Provider
       class Schema
         # JSON Schema for the typed answer each question type returns. The
-        # shapes follow https://docs.typesafe.ai/api#answer-types: a Noul
-        # carries one probability, a Choice the chosen option plus a
-        # distribution and confidence, a Score the weighted position plus
-        # the legend, a distribution over levels, and confidence.
+        # shapes follow https://docs.typesafe.ai/api#answer-types. A Noul
+        # carries one probability. A Choice carries the chosen option, a
+        # distribution, and confidence. A Score carries the weighted
+        # position, the legend, a distribution over levels, and confidence.
         module Answers
           PROBABILITY = { 'type' => 'number', 'minimum' => 0, 'maximum' => 1 }.freeze
 

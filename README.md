@@ -3,11 +3,23 @@
 [![CI](https://github.com/kieranklaassen/ruby_llm-typesafe/actions/workflows/ci.yml/badge.svg)](https://github.com/kieranklaassen/ruby_llm-typesafe/actions/workflows/ci.yml)
 [![Gem Version](https://badge.fury.io/rb/ruby_llm-typesafe.svg)](https://rubygems.org/gems/ruby_llm-typesafe)
 
-[TypeSafe](https://typesafe.ai) System One structured judgments for [RubyLLM](https://rubyllm.com) 2.
+A [RubyLLM](https://rubyllm.com) 2 provider for [TypeSafe](https://typesafe.ai).
 
-Jev, TypeSafe's System One model, does not generate text. You send it one **state** (a string, or JSON your application already has) and a batch of typed **questions**; it returns calibrated probabilities your code can act on directly. This gem registers a `:typesafe` provider that maps those questions onto RubyLLM's structured output API, so the request is `Chat#with_schema` and the answers come back through `Message#parsed`.
+TypeSafe runs Jev, a System One model. Jev does not write text. You give it one piece of state (a string, or JSON your application already has) and a batch of typed questions. It answers each question with a probability your code can act on. There are three question types, which TypeSafe calls primitives:
+
+- Noul asks whether something is true and returns the probability of yes.
+- Choice picks one option from a set you define and returns a probability for each option.
+- Score rates the state against ordered levels you define and returns a weighted position on that scale.
+
+This gem adds a `:typesafe` provider to RubyLLM. Because TypeSafe only returns typed answers, the provider works through RubyLLM's structured output API and nothing else. You build the questions with `RubyLLM::Providers::TypeSafe::Schema`, pass them to `chat.with_schema`, call `ask` with the state, and read the answers from `response.parsed`. Calling `ask` without a schema, streaming, and tools raise an error before any request is sent (see [Structured output only](#structured-output-only)).
 
 ```ruby
+require 'ruby_llm-typesafe'
+
+RubyLLM.configure do |config|
+  config.typesafe_api_key = ENV['TYPESAFE_API_KEY']
+end
+
 schema = RubyLLM::Providers::TypeSafe::Schema.new do |s|
   s.noul :is_urgent, instructions: 'Does this convey urgency?'
   s.choice :department, instructions: 'Which team should handle this?',
@@ -18,15 +30,15 @@ schema = RubyLLM::Providers::TypeSafe::Schema.new do |s|
                         criteria: ['Calm', 'Frustrated', 'Very angry']
 end
 
-answers = RubyLLM.chat(model: 'jev-latest', provider: :typesafe)
-                 .with_schema(schema)
-                 .ask('Help! My payouts have been failing for 3 days.')
-                 .parsed
+response = RubyLLM.chat(model: 'jev-latest', provider: :typesafe)
+                  .with_schema(schema)
+                  .ask('Help! My payouts have been failing for 3 days.')
 
-answers['is_urgent']['noul']          # => 0.95
-answers['department']['choice']       # => "billing"
+answers = response.parsed
+answers['is_urgent']['noul']           # => 0.95
+answers['department']['choice']        # => "billing"
 answers['department']['probabilities'] # => {"billing"=>0.87, "technical"=>0.13, "sales"=>0.0}
-answers['frustration']['score']       # => 1.04  (between "Frustrated" and "Very angry")
+answers['frustration']['score']        # => 1.04  (between "Frustrated" and "Very angry")
 ```
 
 ## Installation
@@ -38,7 +50,7 @@ gem 'ruby_llm', '>= 2.0.0.rc3'
 gem 'ruby_llm-typesafe'
 ```
 
-Requiring `ruby_llm-typesafe` (Bundler does this for you) registers the provider, defines its configuration options, and merges the packaged TypeSafe model catalog into RubyLLM's registry. Nothing in RubyLLM itself changes.
+Requiring `ruby_llm-typesafe` (Bundler does this for you) registers the provider, defines its configuration options, and adds the packaged TypeSafe model catalog to RubyLLM's registry. Nothing in RubyLLM itself changes.
 
 The gem supports RubyLLM `>= 2.0.0.rc3, < 3` on Ruby 3.1.3 and newer.
 
@@ -53,15 +65,15 @@ RubyLLM.configure do |config|
 end
 ```
 
-The key is sent only in the `Authorization: Bearer` header. Never commit it; the gem's own specs and cassettes read it from `TYPESAFE_API_KEY` at run time and scrub it before anything is written to disk.
+The gem sends the key only in the `Authorization: Bearer` header. Never commit it. The gem's own specs and cassettes read it from `TYPESAFE_API_KEY` at run time and scrub it before writing anything to disk.
 
-Everything else about the HTTP layer (timeouts, proxies, retry limits, logging) is RubyLLM's own [configuration](https://rubyllm.com/configuration/). TypeSafe requests go through the same Faraday stack as every other provider.
+Timeouts, proxies, retry limits, and logging come from RubyLLM's own [configuration](https://rubyllm.com/configuration/). TypeSafe requests go through the same Faraday stack as every other provider.
 
 ## Usage
 
 ### Build the questions
 
-`RubyLLM::Providers::TypeSafe::Schema` is the request. Each question has an id you choose, `instructions`, and for Choice and Score a set of `criteria`. TypeSafe evaluates every question independently over the same state in one request, so batch what you can.
+`RubyLLM::Providers::TypeSafe::Schema` is the request. Each question has an id you choose, `instructions`, and, for Choice and Score, `criteria`. TypeSafe evaluates every question independently over the same state in one request, so batch what you can.
 
 ```ruby
 schema = RubyLLM::Providers::TypeSafe::Schema.new do |s|
@@ -89,7 +101,7 @@ s.noul :is_urgent, instructions: 'Does this convey urgency?',
 answers['is_urgent'] # => {"type"=>"noul", "noul"=>0.95}
 ```
 
-Ask one Noul per label when several labels may apply at once. A value near 0.5 means yes and no are about equally likely, not medium intensity.
+Ask one Noul per label when several labels may apply at once. A value near 0.5 means yes and no are about equally likely. It does not mean medium intensity.
 
 #### Choice: which one?
 
@@ -109,7 +121,7 @@ answers['department']
 #     "confidence"=>0.8}
 ```
 
-Include a no-match option when nothing may fit; the model cannot choose an option you did not list.
+Include a no-match option when nothing may fit. The model cannot choose an option you did not list.
 
 #### Score: how much?
 
@@ -130,7 +142,7 @@ answers['frustration']
 
 #### Structured instructions and criteria
 
-Instructions, Choice descriptions, Score levels, and Noul criteria all accept JSON structure (Hashes, Arrays, `nil`), which helps when a question has several parts or needs supporting data such as a taxonomy or a record:
+Instructions, Choice descriptions, Score levels, and Noul criteria all accept JSON structure (Hashes, Arrays, `nil`). Use it when a question has several parts or needs supporting data such as a taxonomy or a record:
 
 ```ruby
 s.choice :department,
@@ -143,11 +155,11 @@ s.choice :department,
          }
 ```
 
-See TypeSafe's [primitives](https://docs.typesafe.ai/primitives) and [advanced structure](https://docs.typesafe.ai/primitives/advanced) guides for how to write questions the model answers well.
+TypeSafe's [primitives](https://docs.typesafe.ai/primitives) and [advanced structure](https://docs.typesafe.ai/primitives/advanced) guides explain how to write questions the model answers well.
 
 ### Send the state
 
-The latest user message is the state. Plain text is sent as a string:
+The latest user message is the state. The gem sends plain text as a string:
 
 ```ruby
 chat = RubyLLM.chat(model: 'jev-latest', provider: :typesafe).with_schema(schema)
@@ -161,13 +173,13 @@ chat.ask({ sender: { email: 'donotreply@payroll.example' },
            message: 'Reply with your login password so we can release the funds.' }.to_json)
 ```
 
-To set the state directly, use `with_provider_options`. `provider_options` is System One's own vocabulary and merges into the request body; `state` replaces the message-derived state, and `generate` sends the request without staging a message:
+To set the state directly, use `with_provider_options`. `provider_options` is System One's own request vocabulary and merges into the request body. `state` replaces the message-derived state, and `generate` sends the request without staging a message:
 
 ```ruby
 chat.with_provider_options(state: { ticket: ticket.as_json, history: ticket.messages.as_json }).generate
 ```
 
-Each `ask` is one independent evaluation. Earlier turns and answers stay in `chat.messages` for your own bookkeeping, but only the latest state is sent. To judge a conversation, pass the conversation as the state.
+Each `ask` is one independent evaluation. Earlier turns and answers stay in `chat.messages` for your own bookkeeping, but the gem sends only the latest state. To judge a conversation, pass the conversation as the state.
 
 ### Read the answers
 
@@ -183,50 +195,65 @@ response.tokens.output  # => 73
 response.raw            # => the Faraday::Response, if you need headers or the full body
 ```
 
-`probabilities` tell you what the model thinks; `confidence` (Choice and Score only) tells you how concentrated that opinion is. Thresholds, escalation, and business rules stay in your code. Typed output guarantees the shape of an answer, not its correctness; evaluate the model on your own data before acting on it automatically. TypeSafe's [confidence](https://docs.typesafe.ai/confidence) guide covers the distinction.
+`probabilities` tell you what the model thinks. `confidence` (Choice and Score only) tells you how concentrated that opinion is. Thresholds, escalation, and business rules stay in your code. Typed output guarantees the shape of an answer, not its correctness, so evaluate the model on your own data before acting on it automatically. TypeSafe's [confidence](https://docs.typesafe.ai/confidence) guide covers the distinction.
 
 ## Structured output only
 
-TypeSafe answers typed questions. It does not write text, so this provider deliberately supports only the path above and fails fast, before any request, on everything else:
+TypeSafe answers typed questions. It does not write text, so this provider supports only the path above. Everything else raises before the gem sends a request:
 
-| Call | Result |
+| Call | Raises |
 |------|--------|
-| `ask` without a TypeSafe schema | `RubyLLM::Error`: "TypeSafe answers typed questions only..." |
-| `with_schema` with an ordinary JSON Schema | same |
-| `ask` with a block (streaming) | `RubyLLM::Error`: "TypeSafe doesn't support streaming" |
-| `with_tools` | `RubyLLM::Error`: "TypeSafe doesn't support tools" |
+| `ask` without `with_schema` | `RubyLLM::Error`: `TypeSafe answers typed questions only. Build them with RubyLLM::Providers::TypeSafe::Schema and pass the schema to with_schema.` |
+| `with_schema` with an ordinary JSON Schema (a Hash or `RubyLLM::Schema`) | the same `RubyLLM::Error` |
+| `ask` with a block (streaming) | `RubyLLM::Error`: `TypeSafe doesn't support streaming` |
+| `with_tools` | `RubyLLM::Error`: `TypeSafe doesn't support tools` |
+| `with_server_tools` | `RubyLLM::UnsupportedServerToolError` |
 | `ask(..., with: file)` | `RubyLLM::UnsupportedAttachmentError` |
-| `embed`, `paint`, `speak`, `transcribe`, `moderate`, `rerank` | RubyLLM's usual "doesn't support" errors |
+| `embed`, `paint`, `speak`, `transcribe`, `moderate`, `rerank` | RubyLLM's usual `RubyLLM::Error`: `TypeSafe doesn't support ...` |
+
+For example, a chat without a schema fails on `ask`, not on the network:
+
+```ruby
+chat = RubyLLM.chat(model: 'jev-latest', provider: :typesafe)
+
+chat.ask('Help! My payouts have been failing for 3 days.')
+# RubyLLM::Error: TypeSafe answers typed questions only. Build them with
+# RubyLLM::Providers::TypeSafe::Schema and pass the schema to with_schema.
+
+chat.with_schema(schema).ask('Help!') { |chunk| print chunk.content }
+# RubyLLM::Error: TypeSafe doesn't support streaming
+```
 
 ## Error handling
 
 HTTP failures raise RubyLLM's [standard error classes](https://rubyllm.com/error-handling/) with TypeSafe's message:
 
-| Status | Error |
-|--------|-------|
-| 400 | `RubyLLM::BadRequestError`, for example an unknown model |
+| Status | Raises |
+|--------|--------|
+| 400 | `RubyLLM::BadRequestError`, for example `Unknown model: no-such-model` |
 | 401 | `RubyLLM::UnauthorizedError` |
-| 422 | `RubyLLM::Error` with the offending fields, for example `questions.bogus: Input tag 'nope' ...` |
+| 422 | `RubyLLM::Error` naming the offending fields, for example `questions.bogus: Input tag 'nope' ...` |
 | 429 | `RubyLLM::RateLimitError` |
 | 529 | `RubyLLM::OverloadedError` |
-| 5xx | `RubyLLM::ServerError` / `RubyLLM::ServiceUnavailableError` |
+| 500 | `RubyLLM::ServerError` |
+| 502, 503, 504 | `RubyLLM::ServiceUnavailableError` |
 
 ```ruby
 begin
   chat.ask(text)
 rescue RubyLLM::RateLimitError, RubyLLM::OverloadedError
-  # retries are already exhausted; back off further or queue the job
+  # RubyLLM has already retried; back off further or queue the job
 rescue RubyLLM::Error => e
   e.message          # => "Unknown model: no-such-model"
   e.response&.status # => 400
 end
 ```
 
-TypeSafe asks clients to retry 429 and 529 with backoff. RubyLLM's transport already does that, honoring `Retry-After`, with `config.max_retries`, `config.retry_interval`, `config.retry_backoff_factor`, and `config.retry_max_interval` controlling the policy.
+TypeSafe asks clients to retry 429 and 529 with backoff. RubyLLM's transport does that and honors `Retry-After`. `config.max_retries`, `config.retry_interval`, `config.retry_backoff_factor`, and `config.retry_max_interval` control the policy.
 
 ## Models
 
-The gem ships a `models.json` catalog so `RubyLLM.models.find('jev-latest')` and `RubyLLM.models.by_provider(:typesafe)` work offline. `jev-latest` is TypeSafe's flagship model; the response reports the exact version that ran (`response.model`).
+The gem ships a `models.json` catalog, so `RubyLLM.models.find('jev-latest')` and `RubyLLM.models.by_provider(:typesafe)` work offline. `jev-latest` is TypeSafe's flagship model. The response reports the exact version that ran in `response.model`.
 
 ```ruby
 RubyLLM.models.by_provider(:typesafe).map(&:id) # => ["jev-latest", "jev-preview"]
@@ -247,7 +274,7 @@ bundle exec rake vcr:record    # re-record the :live cassettes against the real 
 bin/console                    # IRB with the provider configured from .env
 ```
 
-Specs tagged `:live` replay VCR cassettes in `spec/fixtures/vcr_cassettes`; CI never records and never needs a key. See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and [CHANGELOG.md](CHANGELOG.md) for release notes.
+Specs tagged `:live` replay VCR cassettes in `spec/fixtures/vcr_cassettes`. CI never records and never needs a key. See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and [CHANGELOG.md](CHANGELOG.md) for release notes.
 
 ## License
 

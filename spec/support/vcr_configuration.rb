@@ -9,7 +9,7 @@ VCR.configure do |config|
 
   FileUtils.mkdir_p(config.cassette_library_dir)
 
-  # Allow HTTP connections when necessary - this will fail PRs by design if they don't have cassettes
+  # Allow HTTP connections when no cassette is in use. A pull request without cassettes fails by design.
   config.allow_http_connections_when_no_cassette = true
 
   # Filter out API keys from the recorded cassettes
