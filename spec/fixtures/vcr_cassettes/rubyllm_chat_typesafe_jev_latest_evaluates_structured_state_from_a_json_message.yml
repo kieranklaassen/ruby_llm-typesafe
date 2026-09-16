@@ -1,0 +1,46 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.typesafe.ai/v1/systemone
+    body:
+      encoding: UTF-8
+      string: '{"model":"jev-latest","state":{"sender":{"display_name":"Beaver Dam
+        Builders Ltd.","email":"donotreply@payroll.example"},"message":"Your Q3 bonus
+        is ready. Reply with your login password so we can release the funds."},"questions":{"requests_credentials":{"type":"noul","instructions":{"question":"Does
+        the `message` ask the recipient to disclose a sensitive credential?","inspect":"message"},"criteria":{"true":"Asks
+        the recipient to reply with a password, PIN, or one-time code","false":"No
+        sensitive credential is requested"}}}}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.4
+      Authorization:
+      - Bearer <AUTH_TOKEN>
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Wed, 16 Sep 2026 04:43:04 GMT
+      Server:
+      - istio-envoy
+      Content-Length:
+      - '133'
+      Content-Type:
+      - application/json
+      X-Typesafe-Request-Id:
+      - "<X_TYPESAFE_REQUEST_ID>"
+      X-Envoy-Upstream-Service-Time:
+      - '70'
+    body:
+      encoding: UTF-8
+      string: '{"model":"jev-1.13.0","answers":{"requests_credentials":{"type":"noul","noul":0.99}},"usage":{"input_tokens":390,"output_tokens":21}}'
+  recorded_at: Wed, 16 Sep 2026 04:43:05 GMT
+recorded_with: VCR 6.4.0

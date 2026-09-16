@@ -1,0 +1,47 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.typesafe.ai/v1/systemone
+    body:
+      encoding: UTF-8
+      string: '{"model":"jev-latest","state":"Fixed the null check. Also refactored
+        the retry loop and bumped the SDK while I was in there.","questions":{"pr_scope":{"type":"score","instructions":"How
+        focused is this pull request description on a single change?","criteria":[{"summary":"One
+        change, clearly stated"},{"summary":"One main change plus a small related
+        tweak"},{"summary":"Several independent changes bundled together"}]}}}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.4
+      Authorization:
+      - Bearer <AUTH_TOKEN>
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Wed, 16 Sep 2026 04:43:06 GMT
+      Server:
+      - istio-envoy
+      Content-Length:
+      - '365'
+      Content-Type:
+      - application/json
+      X-Typesafe-Request-Id:
+      - "<X_TYPESAFE_REQUEST_ID>"
+      X-Envoy-Upstream-Service-Time:
+      - '57'
+    body:
+      encoding: UTF-8
+      string: '{"model":"jev-1.13.0","answers":{"pr_scope":{"type":"score","score":1.95,"confidence":0.92,"legend":{"0":{"summary":"One
+        change, clearly stated"},"1":{"summary":"One main change plus a small related
+        tweak"},"2":{"summary":"Several independent changes bundled together"}},"probabilities":{"0":0.0,"1":0.05,"2":0.95}}},"usage":{"input_tokens":357,"output_tokens":18}}'
+  recorded_at: Wed, 16 Sep 2026 04:43:07 GMT
+recorded_with: VCR 6.4.0

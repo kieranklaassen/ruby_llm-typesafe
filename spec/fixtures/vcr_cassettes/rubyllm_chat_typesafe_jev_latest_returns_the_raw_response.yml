@@ -1,0 +1,48 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.typesafe.ai/v1/systemone
+    body:
+      encoding: UTF-8
+      string: '{"model":"jev-latest","state":"Help! My payouts have been failing for
+        3 days.","questions":{"is_urgent":{"type":"noul","instructions":"Does this
+        convey urgency?","criteria":{"true":"Explicitly time-sensitive","false":"No
+        urgency expressed"}},"department":{"type":"choice","instructions":"Which team
+        should handle this?","criteria":{"billing":"Payments, invoicing, refunds","technical":"Bugs,
+        outages, integrations","sales":"Pricing, upgrades, new accounts"}},"frustration":{"type":"score","instructions":"How
+        frustrated is the customer?","criteria":["Calm","Frustrated","Very angry"]}}}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.4
+      Authorization:
+      - Bearer <AUTH_TOKEN>
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Wed, 16 Sep 2026 04:43:05 GMT
+      Server:
+      - istio-envoy
+      Content-Length:
+      - '414'
+      Content-Type:
+      - application/json
+      X-Typesafe-Request-Id:
+      - "<X_TYPESAFE_REQUEST_ID>"
+      X-Envoy-Upstream-Service-Time:
+      - '63'
+    body:
+      encoding: UTF-8
+      string: '{"model":"jev-1.13.0","answers":{"is_urgent":{"type":"noul","noul":0.95},"department":{"type":"choice","choice":"billing","confidence":0.78,"probabilities":{"sales":0.0,"technical":0.15,"billing":0.85}},"frustration":{"type":"score","score":1.04,"confidence":0.93,"legend":{"0":"Calm","1":"Frustrated","2":"Very
+        angry"},"probabilities":{"0":0.0,"1":0.96,"2":0.04}}},"usage":{"input_tokens":426,"output_tokens":73}}'
+  recorded_at: Wed, 16 Sep 2026 04:43:06 GMT
+recorded_with: VCR 6.4.0
