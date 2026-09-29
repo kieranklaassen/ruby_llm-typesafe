@@ -156,8 +156,8 @@ RSpec.describe RubyLLM::Protocols::SystemOne do
         .to raise_error(RubyLLM::Error, "TypeSafe doesn't support tools")
     end
 
-    it 'refuses server tools' do
-      expect { typesafe_chat.with_server_tools(:web_search).ask(support_state) }
+    it 'refuses provider tools' do
+      expect { typesafe_chat.with_provider_tools(:web_search).ask(support_state) }
         .to raise_error(RubyLLM::UnsupportedServerToolError)
     end
 

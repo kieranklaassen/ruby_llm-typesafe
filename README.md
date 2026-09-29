@@ -5,6 +5,35 @@
 
 A [RubyLLM](https://rubyllm.com) 2 provider for [TypeSafe](https://typesafe.ai).
 
+> [!TIP]
+> **RubyLLM judgments are the new way to ask these questions.** The next RubyLLM release adds [judgments](https://rubyllm.com/next/judgments/): `RubyLLM::Judge` classes with `probability`, `choice`, and `score` questions, answered by TypeSafe's Jev through a TypeSafe provider built into RubyLLM itself. Once your app is on a RubyLLM version with judgments, use them instead of this gem. Until then, this gem is how you use Jev on RubyLLM 2.0.
+>
+> Both register a provider named `:typesafe`, so don't load both. When you upgrade, remove `ruby_llm-typesafe` from your Gemfile and use RubyLLM's built-in provider.
+>
+> ```ruby
+> RubyLLM.configure do |config|
+>   config.typesafe_api_key = ENV['TYPESAFE_API_KEY']
+> end
+>
+> class TicketTriage < RubyLLM::Judge
+>   probability :urgent, "Does this need attention today?"
+>
+>   choice :department, "Which team should handle this?" do
+>     billing   "Payments and refunds"
+>     technical "Bugs and integrations"
+>     other     "Everything else"
+>   end
+>
+>   score :frustration, "How frustrated is the customer?",
+>     ["Calm", "Frustrated", "Angry"]
+> end
+>
+> judgment = TicketTriage.judge("I was charged twice. Please refund the duplicate charge today.")
+> judgment.urgent.probability  # a Noul
+> judgment.department.choice   # a Choice
+> judgment.frustration.score   # a Score
+> ```
+
 TypeSafe runs Jev, a System One model. Jev does not write text. You give it one piece of state (a string, or JSON your application already has) and a batch of typed questions. It answers each question with a probability your code can act on. There are three question types, which TypeSafe calls primitives:
 
 - Noul asks whether something is true and returns the probability of yes.
@@ -207,7 +236,7 @@ TypeSafe answers typed questions. It does not write text, so this provider suppo
 | `with_schema` with an ordinary JSON Schema (a Hash or `RubyLLM::Schema`) | the same `RubyLLM::Error` |
 | `ask` with a block (streaming) | `RubyLLM::Error`: `TypeSafe doesn't support streaming` |
 | `with_tools` | `RubyLLM::Error`: `TypeSafe doesn't support tools` |
-| `with_server_tools` | `RubyLLM::UnsupportedServerToolError` |
+| `with_provider_tools` | `RubyLLM::UnsupportedServerToolError` |
 | `ask(..., with: file)` | `RubyLLM::UnsupportedAttachmentError` |
 | `embed`, `paint`, `speak`, `transcribe`, `moderate`, `rerank` | RubyLLM's usual `RubyLLM::Error`: `TypeSafe doesn't support ...` |
 
