@@ -8,6 +8,8 @@ A [RubyLLM](https://rubyllm.com) 2 provider for [TypeSafe](https://typesafe.ai).
 > [!TIP]
 > **RubyLLM judgments are the new way to ask these questions.** The next RubyLLM release adds [judgments](https://rubyllm.com/next/judgments/): `RubyLLM::Judge` classes with `probability`, `choice`, and `score` questions, answered by TypeSafe's Jev through a TypeSafe provider built into RubyLLM itself. Once your app is on a RubyLLM version with judgments, use them instead of this gem. Until then, this gem is how you use Jev on RubyLLM 2.0.
 >
+> Both register a provider named `:typesafe`, so don't load both. When you upgrade, remove `ruby_llm-typesafe` from your Gemfile and use RubyLLM's built-in provider.
+>
 > ```ruby
 > RubyLLM.configure do |config|
 >   config.typesafe_api_key = ENV['TYPESAFE_API_KEY']
@@ -234,7 +236,7 @@ TypeSafe answers typed questions. It does not write text, so this provider suppo
 | `with_schema` with an ordinary JSON Schema (a Hash or `RubyLLM::Schema`) | the same `RubyLLM::Error` |
 | `ask` with a block (streaming) | `RubyLLM::Error`: `TypeSafe doesn't support streaming` |
 | `with_tools` | `RubyLLM::Error`: `TypeSafe doesn't support tools` |
-| `with_server_tools` | `RubyLLM::UnsupportedServerToolError` |
+| `with_provider_tools` | `RubyLLM::UnsupportedServerToolError` |
 | `ask(..., with: file)` | `RubyLLM::UnsupportedAttachmentError` |
 | `embed`, `paint`, `speak`, `transcribe`, `moderate`, `rerank` | RubyLLM's usual `RubyLLM::Error`: `TypeSafe doesn't support ...` |
 
